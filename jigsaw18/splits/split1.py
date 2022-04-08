@@ -14,7 +14,7 @@ toxic_set = set(list(more_toxic_list) + list(less_toxic_list))
 toxic_list = sorted(list(toxic_set))
 print(len(more_toxic_list), len(less_toxic_list), len(toxic_list))
 
-df1 = pd.read_csv('../../input/external_data/jigsaw-toxic-comment-classification-challenge/train.csv')
+df1 = pd.read_csv('../../input/external_data/jigsaw-toxic-comment-classification-challenge/train.csv.zip')
 id_list = df1['id'].values
 id_list1 = []
 comment_list = df1['comment_text'].values
