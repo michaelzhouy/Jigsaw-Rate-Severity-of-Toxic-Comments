@@ -7,7 +7,7 @@ from tqdm import tqdm
 import pickle
 from sklearn.model_selection import KFold
 
-df1 = pd.read_csv('../../input/external_data/ruddit/Dataset/ruddit_with_text.csv')
+df1 = pd.read_csv('../../input/external/ruddit/Dataset/ruddit_with_text.csv')
 comment_list = df1['txt'].values
 id_list = df1['comment_id'].values
 id_list1 = []
