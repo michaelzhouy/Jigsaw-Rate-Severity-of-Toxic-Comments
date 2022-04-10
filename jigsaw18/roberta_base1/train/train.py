@@ -15,20 +15,24 @@ from torch.cuda.amp import autocast, GradScaler
 import time
 from transformers import RobertaModel, RobertaPreTrainedModel, RobertaConfig, get_linear_schedule_with_warmup, RobertaTokenizerFast
 
+
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):
         self.reset()
+
     def reset(self):
         self.val = 0
         self.avg = 0
         self.sum = 0
         self.count = 0
+
     def update(self, val, n=1):
         self.val = val
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
 
 class JRSDataset(Dataset):
     def __init__(self, id_list, tokenizer, data_dict, max_len):
@@ -36,8 +40,10 @@ class JRSDataset(Dataset):
         self.tokenizer=tokenizer
         self.data_dict=data_dict
         self.max_len=max_len
+
     def __len__(self):
         return len(self.id_list)
+
     def __getitem__(self, index):
         tokenized = self.tokenizer(text=self.data_dict[self.id_list[index]]['text'],
                                    padding='max_length',
@@ -49,6 +55,7 @@ class JRSDataset(Dataset):
         target = self.data_dict[self.id_list[index]]['labels']
         return tokenized['input_ids'].squeeze(), tokenized['attention_mask'].squeeze(), tokenized['token_type_ids'].squeeze(), target
 
+
 class JRSModel(RobertaPreTrainedModel):
     def __init__(self, config):
         super(JRSModel, self).__init__(config)
@@ -56,12 +63,14 @@ class JRSModel(RobertaPreTrainedModel):
         self.norm = nn.LayerNorm(config.hidden_size)
         self.classifier = nn.Linear(config.hidden_size, 6)
         self.init_weights()
+
     def forward(self, input_ids, attention_mask=None, token_type_ids=None):
         outputs = self.roberta(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)['last_hidden_state']
         embeddings = torch.mean(outputs, axis=1)
-        #embeddings = self.norm(embeddings)
+        # embeddings = self.norm(embeddings)
         logits = self.classifier(embeddings)
         return logits
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -85,7 +94,8 @@ def main():
         id_list = pickle.load(f)
     with open('../../splits/split1/data_dict.pickle', 'rb') as f:
         data_dict = pickle.load(f)
-    print(len(id_list), len(data_dict))
+    if args.local_rank == 0:
+        print(len(id_list), len(data_dict))
 
     # hyperparameters
     learning_rate = 0.000025
@@ -107,10 +117,12 @@ def main():
 
     model.to(args.device)
 
-    num_train_steps = int(len(id_list)/(batch_size*3)*num_epoch)
+    num_train_steps = int(len(id_list) / (batch_size * 3) * num_epoch)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(num_train_steps*0.1), num_training_steps=num_train_steps)
-    model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank], output_device=args.local_rank, find_unused_parameters=True)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(num_train_steps * 0.1),
+                                                num_training_steps=num_train_steps)
+    model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank],
+                                                      output_device=args.local_rank, find_unused_parameters=True)
 
     # training
     train_datagen = JRSDataset(id_list, tokenizer, data_dict, max_len)

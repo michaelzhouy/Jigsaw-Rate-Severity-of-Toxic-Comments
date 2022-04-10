@@ -15,13 +15,16 @@ from torch.cuda.amp import autocast, GradScaler
 import time
 from transformers import RobertaModel, RobertaPreTrainedModel, RobertaConfig, get_linear_schedule_with_warmup, RobertaTokenizerFast
 
+
 class JRSDataset(Dataset):
     def __init__(self, text_list, tokenizer, max_len):
         self.text_list=text_list
         self.tokenizer=tokenizer
         self.max_len=max_len
+
     def __len__(self):
         return len(self.text_list)
+
     def __getitem__(self, index):
         tokenized = self.tokenizer(text=self.text_list[index],
                                    padding='max_length',
@@ -32,6 +35,7 @@ class JRSDataset(Dataset):
                                    return_tensors='pt')
         return tokenized['input_ids'].squeeze(), tokenized['attention_mask'].squeeze(), tokenized['token_type_ids'].squeeze()
 
+
 class JRSModel(RobertaPreTrainedModel):
     def __init__(self, config):
         super(JRSModel, self).__init__(config)
@@ -39,13 +43,15 @@ class JRSModel(RobertaPreTrainedModel):
         self.norm = nn.LayerNorm(config.hidden_size)
         self.classifier = nn.Linear(config.hidden_size, 6)
         self.init_weights()
+
     @autocast()
     def forward(self, input_ids, attention_mask=None, token_type_ids=None):
         outputs = self.roberta(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)['last_hidden_state']
         embeddings = torch.mean(outputs, axis=1)
-        #embeddings = self.norm(embeddings)
+        # embeddings = self.norm(embeddings)
         logits = self.classifier(embeddings)
         return logits
+
 
 def main():
 
@@ -116,7 +122,7 @@ def main():
             batch_token_type_ids = batch_token_type_ids.cuda()
             with autocast():
                 logits = model(batch_input_ids, batch_attention_mask, batch_token_type_ids)
-            less_toxic_pred[start:end] += logits.sigmoid().cpu().data.numpy()
+            less_toxic_pred[start: end] += logits.sigmoid().cpu().data.numpy()
 
     ###
     less_toxic_score = np.sum(less_toxic_pred, axis=1)
@@ -133,9 +139,9 @@ def main():
             more_toxic_score += more_toxic_pred[:,i]*wt[i]
         return 1.0 - np.mean(less_toxic_score<more_toxic_score)
 
-    varbound=np.array([[0,20]]*6)
+    varbound=np.array([[0, 20]] * 6)
 
-    model=ga(function=loss_func, dimension=6, variable_type='int', variable_boundaries=varbound)
+    model = ga(function=loss_func, dimension=6, variable_type='int', variable_boundaries=varbound)
 
     model.run()
     best_wt=model.output_dict['variable']
@@ -144,8 +150,8 @@ def main():
     less_toxic_score = np.zeros((len(less_toxic_pred), ), dtype=np.float16)
     more_toxic_score = np.zeros((len(more_toxic_pred), ), dtype=np.float16)
     for i in range(6):
-        less_toxic_score += less_toxic_pred[:,i]*best_wt[i]
-        more_toxic_score += more_toxic_pred[:,i]*best_wt[i]
+        less_toxic_score += less_toxic_pred[:, i] * best_wt[i]
+        more_toxic_score += more_toxic_pred[:, i] * best_wt[i]
     print(np.mean(less_toxic_score<more_toxic_score))
 
     end_time = time.time()
