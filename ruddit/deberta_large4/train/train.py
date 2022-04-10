@@ -90,7 +90,7 @@ def main():
     # hyperparameters
     learning_rate = 0.00003
     max_len = 192
-    batch_size = 4
+    batch_size = 2
     num_epoch = 5
     model_path = "microsoft/deberta-large"
 
