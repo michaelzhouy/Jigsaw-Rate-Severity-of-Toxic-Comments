@@ -86,7 +86,7 @@ def main():
     # hyperparameters
     learning_rate = 0.00005
     max_len = 192
-    batch_size = 32
+    batch_size = 4
     num_epoch = 3
     model_path = "roberta-large"
 
