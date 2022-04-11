@@ -92,24 +92,24 @@ def main():
     if args.local_rank != 0:
         torch.distributed.barrier()
 
-    # prepare input
-    with open('../../splits/split1/train_id_list1.pickle', 'rb') as f:
-        id_list = pickle.load(f)
-    with open('../../splits/split1/data_dict.pickle', 'rb') as f:
-        data_dict = pickle.load(f)
-    print(len(id_list), len(data_dict))
+        # prepare input
+        with open('../../splits/split1/train_id_list1.pickle', 'rb') as f:
+            id_list = pickle.load(f)
+        with open('../../splits/split1/data_dict.pickle', 'rb') as f:
+            data_dict = pickle.load(f)
+        print(len(id_list), len(data_dict))
 
-    # hyperparameters
-    learning_rate = 0.00003
-    max_len = 192
-    batch_size = 32
-    num_epoch = 3
-    model_path = "microsoft/deberta-base"
+        # hyperparameters
+        learning_rate = 0.00003
+        max_len = 192
+        batch_size = 32
+        num_epoch = 3
+        model_path = "microsoft/deberta-base"
 
-    # build model
-    config = DebertaConfig.from_pretrained(model_path)
-    tokenizer = DebertaTokenizer.from_pretrained(model_path)
-    model = JRSDebertaModel.from_pretrained(model_path, config=config)
+        # build model
+        config = DebertaConfig.from_pretrained(model_path)
+        tokenizer = DebertaTokenizer.from_pretrained(model_path)
+        model = JRSDebertaModel.from_pretrained(model_path, config=config)
     if args.local_rank == 0:
         torch.distributed.barrier()
 
