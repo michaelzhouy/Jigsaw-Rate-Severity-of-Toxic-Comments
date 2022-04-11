@@ -89,6 +89,9 @@ def main():
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
 
+    if args.local_rank != 0:
+        torch.distributed.barrier()
+
     # prepare input
     with open('../../splits/split1/train_id_list1.pickle', 'rb') as f:
         id_list = pickle.load(f)
@@ -104,8 +107,6 @@ def main():
     model_path = "microsoft/deberta-base"
 
     # build model
-    if args.local_rank != 0:
-        torch.distributed.barrier()
     config = DebertaConfig.from_pretrained(model_path)
     tokenizer = DebertaTokenizer.from_pretrained(model_path)
     model = JRSDebertaModel.from_pretrained(model_path, config=config)
@@ -154,10 +155,11 @@ def main():
             scaler.update()
             scheduler.step()
 
-            #if args.local_rank == 0:
-            #    print('\r',end='',flush=True)
-            #    message = '%s %5.1f %6.1f %0.8f    |     %0.3f     |' % ("train",j/len(train_generator)+ep,ep,scheduler.get_lr()[0],losses.avg)
-            #    print(message , end='',flush=True)
+            # if args.local_rank == 0:
+            #     print('\r', end='', flush=True)
+            #     message = '%s %5.1f %6.1f %0.8f    |     %0.3f     |' % (
+            #         "train", j / len(train_generator) + ep, ep, scheduler.get_lr()[0], losses.avg)
+            #     print(message, end='', flush=True)
 
         if args.local_rank == 0:
             print('epoch: {}, train_loss: {}'.format(ep, losses.avg), flush=True)

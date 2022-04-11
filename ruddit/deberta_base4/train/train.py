@@ -93,7 +93,8 @@ def main():
         id_list = pickle.load(f)
     with open('../../splits/split1/data_dict.pickle', 'rb') as f:
         data_dict = pickle.load(f)
-    print(len(id_list), len(data_dict))
+    if args.local_rank == 0:
+        print(len(id_list), len(data_dict))
 
     # hyperparameters
     learning_rate = 0.00003
@@ -153,10 +154,11 @@ def main():
             scaler.update()
             scheduler.step()
 
-            #if args.local_rank == 0:
-            #    print('\r',end='',flush=True)
-            #    message = '%s %5.1f %6.1f %0.8f    |     %0.3f     |' % ("train",j/len(train_generator)+ep,ep,scheduler.get_lr()[0],losses.avg)
-            #    print(message , end='',flush=True)
+            # if args.local_rank == 0:
+            #     print('\r', end='', flush=True)
+            #     message = '%s %5.1f %6.1f %0.8f    |     %0.3f     |' % (
+            #         "train", j / len(train_generator) + ep, ep, scheduler.get_lr()[0], losses.avg)
+            #     print(message, end='', flush=True)
 
         if args.local_rank == 0:
             print('epoch: {}, train_loss: {}'.format(ep, losses.avg), flush=True)
