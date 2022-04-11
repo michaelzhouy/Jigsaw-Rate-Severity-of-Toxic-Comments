@@ -67,7 +67,6 @@ def main():
 
     start_time = time.time()
 
-    ###
     df = pd.read_csv('../../../input/validation_data.csv')
     more_toxic_list = df['more_toxic'].values
     less_toxic_list = df['less_toxic'].values
@@ -121,9 +120,9 @@ def main():
 
     for j, (batch_input_ids, batch_attention_mask, batch_token_type_ids) in enumerate(generator):
         with torch.no_grad():
-            start = j*batch_size
-            end = start+batch_size
-            if j == len(generator)-1:
+            start = j * batch_size
+            end = start + batch_size
+            if j == len(generator) - 1:
                 end = len(generator.dataset)
             batch_input_ids = batch_input_ids.cuda()
             batch_attention_mask = batch_attention_mask.cuda()
@@ -137,7 +136,7 @@ def main():
     model = ga(function=loss_func, dimension=6, variable_type='int', variable_boundaries=varbound)
 
     model.run()
-    best_wt=model.output_dict['variable']
+    best_wt = model.output_dict['variable']
 
     ### validate result again
     less_toxic_score = np.zeros((len(less_toxic_pred), ), dtype=np.float16)
@@ -145,7 +144,7 @@ def main():
     for i in range(6):
         less_toxic_score += less_toxic_pred[:, i] * best_wt[i]
         more_toxic_score += more_toxic_pred[:, i] * best_wt[i]
-    print(np.mean(less_toxic_score<more_toxic_score))
+    print(np.mean(less_toxic_score < more_toxic_score))
 
     end_time = time.time()
     print(end_time - start_time)

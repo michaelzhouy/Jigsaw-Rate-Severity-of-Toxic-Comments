@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import pandas as pd
+import pickle
 import os
 from tqdm import tqdm
 import torch.nn as nn
@@ -10,7 +11,6 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
 import torch
 import random
-import pickle
 from torch.cuda.amp import autocast, GradScaler
 import time
 from transformers import DebertaModel, DebertaPreTrainedModel, DebertaConfig, get_linear_schedule_with_warmup, \
@@ -93,7 +93,6 @@ def main():
     torch.backends.cudnn.deterministic = True
 
     # prepare input
-    import pickle
     with open('../../splits/split1/train_id_list1.pickle', 'rb') as f:
         id_list = pickle.load(f)
     with open('../../splits/split1/data_dict.pickle', 'rb') as f:

@@ -125,7 +125,7 @@ def main():
     print(np.mean(less_toxic_pred < more_toxic_pred))
 
     end_time = time.time()
-    print(end_time-start_time)
+    print(end_time - start_time)
 
 if __name__ == "__main__":
     main()

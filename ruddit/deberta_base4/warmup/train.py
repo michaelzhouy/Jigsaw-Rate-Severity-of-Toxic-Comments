@@ -89,27 +89,27 @@ def main():
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
 
-    if args.local_rank != 0:
-        torch.distributed.barrier()
-
-        # prepare input
-        with open('../../splits/split1/train_id_list1.pickle', 'rb') as f:
-            id_list = pickle.load(f)
-        with open('../../splits/split1/data_dict.pickle', 'rb') as f:
-            data_dict = pickle.load(f)
+    # prepare input
+    with open('../../splits/split1/train_id_list1.pickle', 'rb') as f:
+        id_list = pickle.load(f)
+    with open('../../splits/split1/data_dict.pickle', 'rb') as f:
+        data_dict = pickle.load(f)
+    if args.local_rank == 0:
         print(len(id_list), len(data_dict))
 
-        # hyperparameters
-        learning_rate = 0.00003
-        max_len = 192
-        batch_size = 32
-        num_epoch = 3
-        model_path = "microsoft/deberta-base"
+    # hyperparameters
+    learning_rate = 0.00003
+    max_len = 192
+    batch_size = 32
+    num_epoch = 3
+    model_path = "microsoft/deberta-base"
 
-        # build model
-        config = DebertaConfig.from_pretrained(model_path)
-        tokenizer = DebertaTokenizer.from_pretrained(model_path)
-        model = JRSDebertaModel.from_pretrained(model_path, config=config)
+    # build model
+    if args.local_rank != 0:
+        torch.distributed.barrier()
+    config = DebertaConfig.from_pretrained(model_path)
+    tokenizer = DebertaTokenizer.from_pretrained(model_path)
+    model = JRSDebertaModel.from_pretrained(model_path, config=config)
     if args.local_rank == 0:
         torch.distributed.barrier()
 

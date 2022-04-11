@@ -26,6 +26,3 @@ with open('split1/train_id_list1.pickle', 'wb') as f:
     pickle.dump(id_list1, f, protocol=pickle.HIGHEST_PROTOCOL)
 with open('split1/data_dict.pickle', 'wb') as f:
     pickle.dump(data_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-
-
