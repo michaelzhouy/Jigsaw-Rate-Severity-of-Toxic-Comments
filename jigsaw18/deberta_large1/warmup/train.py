@@ -16,20 +16,24 @@ import time
 from transformers import DebertaModel, DebertaPreTrainedModel, DebertaConfig, get_linear_schedule_with_warmup, DebertaTokenizer
 from transformers.models.deberta.modeling_deberta import ContextPooler
 
+
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):
         self.reset()
+
     def reset(self):
         self.val = 0
         self.avg = 0
         self.sum = 0
         self.count = 0
+
     def update(self, val, n=1):
         self.val = val
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
 
 class JRSDebertaDataset(Dataset):
     def __init__(self, id_list, tokenizer, data_dict, max_len):
@@ -37,8 +41,10 @@ class JRSDebertaDataset(Dataset):
         self.tokenizer=tokenizer
         self.data_dict=data_dict
         self.max_len=max_len
+
     def __len__(self):
         return len(self.id_list)
+
     def __getitem__(self, index):
         tokenized = self.tokenizer(text=self.data_dict[self.id_list[index]]['text'],
                                    padding='max_length',
@@ -48,6 +54,7 @@ class JRSDebertaDataset(Dataset):
         target = self.data_dict[self.id_list[index]]['labels']
         return tokenized['input_ids'].squeeze(), tokenized['attention_mask'].squeeze(), tokenized['token_type_ids'].squeeze(), target
 
+
 class JRSDebertaModel(DebertaPreTrainedModel):
     def __init__(self, config):
         super(JRSDebertaModel, self).__init__(config)
@@ -56,6 +63,7 @@ class JRSDebertaModel(DebertaPreTrainedModel):
         output_dim = self.pooler.output_dim
         self.classifier = nn.Linear(output_dim, 6)
         self.init_weights()
+
     def forward(self, input_ids, attention_mask=None, token_type_ids=None):
         with torch.no_grad():
             outputs = self.deberta(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
@@ -63,6 +71,7 @@ class JRSDebertaModel(DebertaPreTrainedModel):
         pooled_output = self.pooler(encoder_layer)
         logits = self.classifier(pooled_output)
         return logits
+
 
 def main():
     parser = argparse.ArgumentParser()

@@ -29,9 +29,9 @@ def loss_func(wt):
 
 class JRSDebertaDataset(Dataset):
     def __init__(self, text_list, tokenizer, max_len):
-        self.text_list=text_list
-        self.tokenizer=tokenizer
-        self.max_len=max_len
+        self.text_list = text_list
+        self.tokenizer = tokenizer
+        self.max_len = max_len
 
     def __len__(self):
         return len(self.text_list)

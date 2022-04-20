@@ -37,10 +37,10 @@ class AverageMeter(object):
 
 class JRSDebertaDataset(Dataset):
     def __init__(self, id_list, tokenizer, data_dict, max_len):
-        self.id_list=id_list
-        self.tokenizer=tokenizer
-        self.data_dict=data_dict
-        self.max_len=max_len
+        self.id_list = id_list
+        self.tokenizer = tokenizer
+        self.data_dict = data_dict
+        self.max_len = max_len
 
     def __len__(self):
         return len(self.id_list)
