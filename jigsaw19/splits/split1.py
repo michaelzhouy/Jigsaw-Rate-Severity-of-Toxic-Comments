@@ -7,7 +7,7 @@ from tqdm import tqdm
 import pickle
 from sklearn.model_selection import KFold
 
-df1 = pd.read_csv('../../input/external_data/jigsaw-unintended-bias-in-toxicity-classification/all_data.csv')
+df1 = pd.read_csv('../../input/external/jigsaw-unintended-bias-in-toxicity-classification/all_data.csv')
 id_list = df1['id'].values
 id_list1 = []
 comment_list = df1['comment_text'].values
