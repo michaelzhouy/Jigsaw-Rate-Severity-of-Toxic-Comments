@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import pandas as pd
+import pickle
 import os
 from tqdm import tqdm
 import torch.nn as nn
@@ -10,7 +11,6 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
 import torch
 import random
-import pickle
 from torch.cuda.amp import autocast, GradScaler
 import time
 from transformers import DebertaModel, DebertaPreTrainedModel, DebertaConfig, get_linear_schedule_with_warmup, DebertaTokenizer
@@ -19,7 +19,6 @@ from transformers.models.deberta.modeling_deberta import ContextPooler
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
-
     def __init__(self):
         self.reset()
 
@@ -53,8 +52,7 @@ class JRSDebertaDataset(Dataset):
                                    max_length=self.max_len,
                                    return_tensors='pt')
         target = self.data_dict[self.id_list[index]]['labels']
-        return tokenized['input_ids'].squeeze(), tokenized['attention_mask'].squeeze(), tokenized[
-            'token_type_ids'].squeeze(), target
+        return tokenized['input_ids'].squeeze(), tokenized['attention_mask'].squeeze(), tokenized['token_type_ids'].squeeze(), target
 
 
 class JRSDebertaModel(DebertaPreTrainedModel):
@@ -92,7 +90,6 @@ def main():
     torch.backends.cudnn.deterministic = True
 
     # prepare input
-    import pickle
     with open('../../splits/split1/train_id_list1.pickle', 'rb') as f:
         id_list = pickle.load(f)
     with open('../../splits/split1/data_dict.pickle', 'rb') as f:
@@ -140,8 +137,7 @@ def main():
     for ep in range(num_epoch):
         losses = AverageMeter()
         model.train()
-        for j, (batch_input_ids, batch_attention_mask, batch_token_type_ids, batch_target) in enumerate(
-                train_generator):
+        for j, (batch_input_ids, batch_attention_mask, batch_token_type_ids, batch_target) in enumerate(train_generator):
             batch_input_ids = batch_input_ids.to(args.device)
             batch_attention_mask = batch_attention_mask.to(args.device)
             batch_token_type_ids = batch_token_type_ids.to(args.device)
